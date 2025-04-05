@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -9,11 +9,15 @@ import {
   Platform,
   Animated,
   Easing,
+  Alert,
+  Image,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Haptics from "expo-haptics";
+import { useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { Button, Input } from "../components/ui";
 import { theme } from "../constants/theme";
@@ -27,10 +31,35 @@ export default function AdultVerificationScreen() {
     privacy: false,
     marketing: false,
   });
+  const [isVerifying, setIsVerifying] = useState(false);
+  const router = useRouter();
 
   // 애니메이션 값
   const shieldScale = new Animated.Value(1);
   const checkOpacity = new Animated.Value(0);
+
+  // 마운트 시 항상 메인 화면으로 자동 이동
+  useEffect(() => {
+    // 성인인증 없이 바로 메인 화면으로 리다이렉트
+    router.replace("/(tabs)");
+
+    /* 성인인증 관련 코드 주석처리
+    const checkVerificationStatus = async () => {
+      try {
+        const isVerified = await AsyncStorage.getItem("adult-verified");
+        
+        if (isVerified === "true") {
+          // 이미 인증 완료된 경우 메인 화면으로 이동
+          router.replace("/(tabs)");
+        }
+      } catch (error) {
+        console.error("성인인증 상태 확인 오류:", error);
+      }
+    };
+    
+    checkVerificationStatus();
+    */
+  }, [router]);
 
   // 체크박스 토글 함수
   const toggleCheck = (item: CheckItemKey) => {
@@ -42,7 +71,7 @@ export default function AdultVerificationScreen() {
   };
 
   // 인증번호 요청 함수
-  const requestVerification = () => {
+  const requestVerification = async () => {
     if (phoneNumber.length < 10) return;
 
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -69,6 +98,30 @@ export default function AdultVerificationScreen() {
       useNativeDriver: true,
       delay: 300,
     }).start();
+
+    try {
+      setIsVerifying(true);
+
+      // MVP에서는 성인인증 없이 진행
+      router.replace("/(tabs)");
+
+      /* 성인인증 관련 코드 주석처리
+      // 실제 구현에서는 휴대폰 인증 등의 프로세스 필요
+      // 여기서는 임시로 시간 지연만 구현
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      
+      // 성인 인증 완료 정보 저장
+      await AsyncStorage.setItem("adult-verified", "true");
+      
+      // 메인 페이지로 이동
+      router.replace("/(tabs)");
+      */
+    } catch (error) {
+      console.error("성인인증 오류:", error);
+      Alert.alert("인증 실패", "성인인증에 실패했습니다. 다시 시도해주세요.");
+    } finally {
+      setIsVerifying(false);
+    }
   };
 
   return (
@@ -168,9 +221,9 @@ export default function AdultVerificationScreen() {
                 }}
                 className="w-auto"
                 onPress={requestVerification}
-                disabled={phoneNumber.length < 10}
+                disabled={phoneNumber.length < 10 || isVerifying}
               >
-                인증번호 받기
+                {isVerifying ? "인증 중..." : "휴대폰 본인인증 진행하기"}
               </Button>
             </View>
 
