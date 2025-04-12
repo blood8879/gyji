@@ -5,6 +5,7 @@ import { StatusBar } from "expo-status-bar";
 import { useFonts } from "expo-font";
 import { useColorScheme } from "react-native";
 import * as SplashScreen from "expo-splash-screen";
+import { Ionicons } from "@expo/vector-icons";
 
 // 스플래시 스크린 유지
 SplashScreen.preventAutoHideAsync();
@@ -18,6 +19,7 @@ export default function RootLayout() {
     "Pretendard-Regular": require("../assets/fonts/Pretendard-Regular.ttf"),
     "Pretendard-Medium": require("../assets/fonts/Pretendard-Medium.ttf"),
     "Pretendard-Bold": require("../assets/fonts/Pretendard-Bold.ttf"),
+    ...Ionicons.font, // <-- Ionicons 폰트 로드 추가
   });
 
   useEffect(() => {
@@ -51,7 +53,7 @@ export default function RootLayout() {
 
         {/* 인증 화면들 */}
         <Stack.Screen name="login" options={{ headerShown: false }} />
-        <Stack.Screen name="register" options={{ headerShown: false }} />
+
         <Stack.Screen
           name="adult-verification"
           options={{ headerShown: false }}

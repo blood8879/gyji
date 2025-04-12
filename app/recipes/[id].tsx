@@ -10,12 +10,14 @@ import {
 import { StatusBar } from "expo-status-bar";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+import { useRouter } from "expo-router";
 
 import { Card } from "@/components/ui";
 import { theme } from "@/constants/theme";
 
 export default function RecipeDetailScreen() {
-  // 더미 데이터
+  const router = useRouter();
+
   const recipe = {
     id: 1,
     title: "전통 막걸리",
@@ -92,7 +94,10 @@ export default function RecipeDetailScreen() {
 
       {/* 헤더 */}
       <View className="px-5 pt-12 pb-2 flex-row justify-between items-center">
-        <TouchableOpacity className="w-10 h-10 items-center justify-center rounded-full bg-white">
+        <TouchableOpacity
+          className="w-10 h-10 items-center justify-center rounded-full bg-white"
+          onPress={() => router.back()}
+        >
           <Ionicons name="arrow-back" size={22} color={theme.neutral[600]} />
         </TouchableOpacity>
         <View className="flex-row">
@@ -162,7 +167,7 @@ export default function RecipeDetailScreen() {
         </View>
 
         {/* 재료 섹션 */}
-        <View className="px-5 mb-6">
+        <View className="px-5 mb-6 py-2">
           <View className="flex-row justify-between items-center mb-4">
             <Text className="text-lg font-bold text-neutral-800">재료</Text>
             <TouchableOpacity className="flex-row items-center">
@@ -171,7 +176,7 @@ export default function RecipeDetailScreen() {
             </TouchableOpacity>
           </View>
 
-          <Card rounded="2xl" elevation="none" className="p-4 bg-white">
+          <Card elevation="none" className="p-4 bg-white rounded-[8px]">
             {recipe.ingredients.map((ingredient, index) => (
               <View
                 key={ingredient.id}
@@ -207,9 +212,8 @@ export default function RecipeDetailScreen() {
           {recipe.steps.map((step, index) => (
             <Card
               key={step.id}
-              rounded="2xl"
               elevation="none"
-              className="mb-4 overflow-hidden bg-white"
+              className="mb-4 overflow-hidden bg-white rounded-[8px]"
             >
               <View className="p-4">
                 <View className="flex-row items-center mb-2">
@@ -248,9 +252,8 @@ export default function RecipeDetailScreen() {
         <View className="px-5 mb-8">
           <TouchableOpacity>
             <Card
-              rounded="2xl"
               elevation="none"
-              className="p-4 bg-white overflow-hidden"
+              className="p-4 bg-white overflow-hidden rounded-[8px]"
             >
               <LinearGradient
                 colors={["#e6f2fe", "#4a91db"]}
@@ -282,7 +285,7 @@ export default function RecipeDetailScreen() {
 
         {/* 공개 설정 */}
         <View className="px-5 mb-8">
-          <Card rounded="2xl" elevation="none" className="p-4 bg-white">
+          <Card elevation="none" className="p-4 bg-white rounded-[8px]">
             <View className="flex-row justify-between items-center">
               <View>
                 <Text className="text-base font-semibold text-neutral-800">
@@ -312,15 +315,15 @@ export default function RecipeDetailScreen() {
       <View className="px-5 py-4 border-t border-gray-100 bg-white">
         <View className="flex-row">
           <TouchableOpacity className="flex-1 mr-3">
-            <Card rounded="2xl" elevation="none" className="p-4 bg-gray-50">
-              <Text className="text-center font-medium text-neutral-700">
+            <Card elevation="none" className="p-4 bg-emerald-50 rounded-[8px]">
+              <Text className="text-center font-medium text-emerald-700">
                 양조일지 시작하기
               </Text>
             </Card>
           </TouchableOpacity>
 
           <TouchableOpacity className="flex-1">
-            <Card rounded="2xl" elevation="none" className="p-4 bg-emerald-500">
+            <Card elevation="none" className="p-4 bg-emerald-500 rounded-[8px]">
               <Text className="text-center font-bold text-white">
                 레시피 수정
               </Text>
