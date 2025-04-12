@@ -1,11 +1,4 @@
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-  Image,
-} from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, Image } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Stack, useRouter, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
@@ -21,37 +14,39 @@ type StageLog = {
   humidity: string;
   images: string[];
   completed: boolean;
+  duration?: string;
 };
 
 export default function JournalDetailScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams();
+  const [activeTab, setActiveTab] = useState("석탄주");
 
   // 더미 데이터
   const [journal] = useState({
     id: id,
-    title: "첫 번째 막걸리 양조",
-    recipe: "전통 막걸리",
-    startDate: "2023년 6월 1일",
-    status: "진행 중",
+    title: "석탄주 양조 일지",
+    category: "청주",
+    startDate: "2025년 4월 5일",
+    status: "진행중",
     progress: 60,
     stages: [
       {
         id: 1,
-        title: "재료 준비",
-        date: "2023년 6월 1일",
-        description: "쌀 1kg을 깨끗이 씻어 물에 6시간 불렸습니다.",
+        title: "쌀을 불린다",
+        date: "2025년 4월 5일",
+        description: "쌀 1kg을 깨끗이 씻어 물에 불렸습니다.",
         temperature: "25°C",
         humidity: "60%",
         images: ["https://via.placeholder.com/150"],
         completed: true,
+        duration: "8 시간",
       },
       {
         id: 2,
-        title: "고두밥 만들기",
-        date: "2023년 6월 2일",
-        description:
-          "불린 쌀을 찜기에 넣고 30분간 쪘습니다. 고슬고슬한 질감이 되었습니다.",
+        title: "죽을 쑨다.",
+        date: "2025년 4월 5일",
+        description: "불린 쌀로 고슬고슬한 죽을 만들었습니다.",
         temperature: "28°C",
         humidity: "65%",
         images: [
@@ -59,423 +54,176 @@ export default function JournalDetailScreen() {
           "https://via.placeholder.com/150",
         ],
         completed: true,
+        duration: "2 시간",
       },
       {
         id: 3,
-        title: "누룩 섞기",
-        date: "2023년 6월 3일",
-        description: "고두밥이 식은 후 누룩을 섞고 발효통에 넣었습니다.",
+        title: "밑술을 한다",
+        date: "2025년 4월 5일",
+        description: "찐 쌀에 누룩을 섞고 발효를 시작했습니다.",
         temperature: "26°C",
         humidity: "63%",
         images: ["https://via.placeholder.com/150"],
         completed: true,
+        duration: "3 일",
       },
       {
         id: 4,
-        title: "1차 발효",
-        date: "2023년 6월 5일",
-        description:
-          "발효가 시작되었습니다. 거품이 조금씩 생기기 시작했습니다.",
+        title: "덧술을 한다",
+        date: "2025년 4월 5일",
+        description: "발효가 진행 중입니다. 거품이 생기기 시작했습니다.",
         temperature: "24°C",
         humidity: "70%",
         images: ["https://via.placeholder.com/150"],
         completed: false,
-      },
-      {
-        id: 5,
-        title: "2차 발효",
-        date: "",
-        description: "",
-        temperature: "",
-        humidity: "",
-        images: [],
-        completed: false,
+        duration: "720 개월",
       },
     ],
   });
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView className="flex-1 bg-gray-50">
       <Stack.Screen
         options={{
           headerShown: false,
         }}
       />
 
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={styles.backButton}
-        >
+      <View className="flex-row items-center justify-between px-4 py-3 bg-white border-b border-gray-200">
+        <TouchableOpacity onPress={() => router.back()} className="p-1">
           <Ionicons name="arrow-back" size={24} color="#333" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>양조일지</Text>
-        <TouchableOpacity style={styles.editButton}>
-          <Ionicons name="create-outline" size={24} color="#5D3F6A" />
+        <Text className="text-lg font-medium text-gray-800">
+          석탄주 양조 일지
+        </Text>
+        <TouchableOpacity className="p-1">
+          <Ionicons name="trash-outline" size={24} color="#FF6B6B" />
         </TouchableOpacity>
       </View>
 
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.contentContainer}
-      >
-        <View style={styles.titleSection}>
-          <Text style={styles.title}>{journal.title}</Text>
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>레시피:</Text>
-            <Text style={styles.infoValue}>{journal.recipe}</Text>
+      <View className="flex-1 flex-col">
+        <View className="flex-row items-center p-4 border-b border-gray-200 bg-white">
+          <View className="flex-1">
+            <Text className="text-base font-bold text-blue-600">석탄주</Text>
+            <Text className="text-sm text-gray-600 mt-1">청주</Text>
           </View>
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>시작일:</Text>
-            <Text style={styles.infoValue}>{journal.startDate}</Text>
+          <View className="bg-blue-100 px-3 py-1.5 rounded-full mr-2">
+            <Text className="text-blue-600 text-sm font-medium">진행중</Text>
           </View>
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>상태:</Text>
-            <View style={styles.statusBadge}>
-              <Text style={styles.statusText}>{journal.status}</Text>
-            </View>
-          </View>
+          <TouchableOpacity className="p-1">
+            <Ionicons name="ellipsis-vertical" size={20} color="#666" />
+          </TouchableOpacity>
         </View>
 
-        <View style={styles.progressSection}>
-          <Text style={styles.sectionTitle}>진행도</Text>
-          <View style={styles.progressBarContainer}>
-            <View
-              style={[styles.progressBar, { width: `${journal.progress}%` }]}
-            />
+        <View className="bg-white py-4 px-4 border-b border-gray-200">
+          <View className="mb-4">
+            <Text className="text-base font-semibold text-gray-800">
+              레시피 단계
+            </Text>
+            <Text className="text-xs text-gray-500 mt-1">
+              (주차 버튼을 클릭하여 양조단계 변경)
+            </Text>
           </View>
-          <Text style={styles.progressText}>{journal.progress}%</Text>
-        </View>
 
-        <View style={styles.stagesSection}>
-          <Text style={styles.sectionTitle}>양조 단계</Text>
-
-          {journal.stages.map((stage: StageLog) => (
-            <View
-              key={stage.id}
-              style={[
-                styles.stageCard,
-                stage.completed ? styles.completedStage : styles.pendingStage,
-              ]}
-            >
-              <View style={styles.stageHeader}>
-                <View style={styles.stageNumberContainer}>
-                  <Text style={styles.stageNumber}>{stage.id}</Text>
-                </View>
-                <Text style={styles.stageTitle}>{stage.title}</Text>
-                {stage.completed && (
-                  <View style={styles.completedBadge}>
-                    <Ionicons name="checkmark" size={16} color="white" />
-                  </View>
-                )}
+          {journal.stages.map((stage) => (
+            <View key={stage.id} className="flex-row items-center mb-4">
+              <View
+                className={`w-8 h-8 rounded-full items-center justify-center ${
+                  stage.id === 1 ? "bg-blue-600" : "bg-gray-200"
+                }`}
+              >
+                <Text
+                  className={`text-base font-bold ${
+                    stage.id === 1 ? "text-white" : "text-gray-600"
+                  }`}
+                >
+                  {stage.id}
+                </Text>
               </View>
-
-              {stage.completed ? (
-                <View style={styles.stageContent}>
-                  <View style={styles.stageInfoRow}>
-                    <Text style={styles.stageInfoLabel}>날짜:</Text>
-                    <Text style={styles.stageInfoValue}>{stage.date}</Text>
-                  </View>
-
-                  <Text style={styles.stageDescription}>
-                    {stage.description}
-                  </Text>
-
-                  <View style={styles.environmentInfo}>
-                    <View style={styles.environmentItem}>
-                      <Ionicons
-                        name="thermometer-outline"
-                        size={18}
-                        color="#666"
-                      />
-                      <Text style={styles.environmentText}>
-                        {stage.temperature}
-                      </Text>
-                    </View>
-                    <View style={styles.environmentItem}>
-                      <Ionicons name="water-outline" size={18} color="#666" />
-                      <Text style={styles.environmentText}>
-                        {stage.humidity}
-                      </Text>
-                    </View>
-                  </View>
-
-                  {stage.images.length > 0 && (
-                    <ScrollView
-                      horizontal
-                      style={styles.imagesScrollView}
-                      showsHorizontalScrollIndicator={false}
-                    >
-                      {stage.images.map((image, index) => (
-                        <Image
-                          key={index}
-                          source={{ uri: image }}
-                          style={styles.stageImage}
-                        />
-                      ))}
-                    </ScrollView>
-                  )}
-                </View>
-              ) : (
-                <View style={styles.pendingStageContent}>
-                  <Text style={styles.pendingText}>
-                    {stage.id === 4 ? "진행 중..." : "대기 중..."}
-                  </Text>
-                  {stage.id === 4 && (
-                    <TouchableOpacity
-                      style={styles.updateButton}
-                      onPress={() =>
-                        router.push(`/journals/update/${stage.id}`)
-                      }
-                    >
-                      <Text style={styles.updateButtonText}>기록 업데이트</Text>
-                    </TouchableOpacity>
-                  )}
-                </View>
-              )}
+              <View className="ml-3">
+                <Text className="text-sm font-medium text-gray-800">
+                  {stage.title}
+                </Text>
+                <Text className="text-xs text-gray-500 mt-0.5">
+                  {stage.duration}
+                </Text>
+              </View>
             </View>
           ))}
         </View>
-      </ScrollView>
+
+        <View className="flex-1 bg-white">
+          <View className="flex-row justify-between items-center px-4 mb-3 pt-4">
+            <Text className="text-base font-semibold text-gray-800">
+              양조 기록
+            </Text>
+            <TouchableOpacity className="flex-row bg-orange-400 py-2 px-3 rounded-full items-center">
+              <Ionicons name="add" size={20} color="#FFF" />
+              <Text className="text-white text-sm font-medium ml-1">
+                기록 추가
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          <View className="w-full h-px bg-gray-200" />
+
+          <View className="flex-1 flex-row">
+            <View className="w-24 shrink-0 px-2 py-4 bg-white">
+              <Text className="text-sm font-bold text-gray-800">4월 5일</Text>
+              <Text className="text-xs text-gray-500 my-1">1단계</Text>
+              <Text className="text-sm text-blue-600">쌀을 불린다</Text>
+            </View>
+
+            <View className="flex-1 bg-blue-50 border-l-2 border-blue-600">
+              <View className="px-4 py-4">
+                <Text className="text-xs text-gray-500 mb-1">
+                  2025년 4월 5일 토요일
+                </Text>
+                <Text className="text-base font-bold text-gray-800 mb-3">
+                  쌀을 불린다
+                </Text>
+
+                <View className="flex-row bg-white rounded-lg p-3 mb-3">
+                  <View className="flex-1 items-center">
+                    <Ionicons
+                      name="thermometer-outline"
+                      size={20}
+                      color="#4D79FF"
+                    />
+                    <Text className="text-xs text-gray-500 mt-1">온도</Text>
+                    <Text className="text-base font-semibold text-gray-800 mt-0.5">
+                      25°C
+                    </Text>
+                  </View>
+                  <View className="flex-1 items-center">
+                    <Ionicons name="water-outline" size={20} color="#4D79FF" />
+                    <Text className="text-xs text-gray-500 mt-1">습도</Text>
+                    <Text className="text-base font-semibold text-gray-800 mt-0.5">
+                      60%
+                    </Text>
+                  </View>
+                </View>
+
+                <View className="mb-3">
+                  <Text className="text-sm font-medium text-gray-500 mb-1">
+                    메모
+                  </Text>
+                  <Text className="text-sm text-gray-800 leading-5">
+                    쌀 1kg을 깨끗이 씻어 물에 불렸습니다.
+                  </Text>
+                </View>
+
+                <View className="flex-row items-center justify-end">
+                  <Ionicons name="time-outline" size={16} color="#888" />
+                  <Text className="text-xs text-gray-500 ml-1">
+                    2025. 4. 5. 오후 1:09:18 작성
+                  </Text>
+                </View>
+              </View>
+            </View>
+          </View>
+        </View>
+      </View>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#F7F7F7",
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: "white",
-    borderBottomWidth: 1,
-    borderBottomColor: "#EEEEEE",
-  },
-  backButton: {
-    padding: 4,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#333",
-  },
-  editButton: {
-    padding: 4,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  contentContainer: {
-    padding: 16,
-  },
-  titleSection: {
-    backgroundColor: "white",
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: "bold",
-    color: "#333",
-    marginBottom: 12,
-  },
-  infoRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 8,
-  },
-  infoLabel: {
-    fontSize: 15,
-    fontWeight: "500",
-    color: "#666",
-    width: 70,
-  },
-  infoValue: {
-    fontSize: 15,
-    color: "#333",
-  },
-  statusBadge: {
-    backgroundColor: "#5D3F6A",
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  statusText: {
-    color: "white",
-    fontSize: 14,
-    fontWeight: "500",
-  },
-  progressSection: {
-    backgroundColor: "white",
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#333",
-    marginBottom: 12,
-  },
-  progressBarContainer: {
-    height: 12,
-    backgroundColor: "#EEEEEE",
-    borderRadius: 6,
-    marginBottom: 8,
-    overflow: "hidden",
-  },
-  progressBar: {
-    height: "100%",
-    backgroundColor: "#5D3F6A",
-    borderRadius: 6,
-  },
-  progressText: {
-    fontSize: 14,
-    fontWeight: "500",
-    color: "#5D3F6A",
-    textAlign: "right",
-  },
-  stagesSection: {
-    backgroundColor: "white",
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  stageCard: {
-    borderRadius: 8,
-    marginBottom: 16,
-    overflow: "hidden",
-  },
-  completedStage: {
-    borderWidth: 1,
-    borderColor: "#E0E0E0",
-  },
-  pendingStage: {
-    borderWidth: 1,
-    borderColor: "#E0E0E0",
-    borderStyle: "dashed",
-  },
-  stageHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#F5F5F5",
-    padding: 12,
-  },
-  stageNumberContainer: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: "#5D3F6A",
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 12,
-  },
-  stageNumber: {
-    color: "white",
-    fontWeight: "bold",
-    fontSize: 14,
-  },
-  stageTitle: {
-    flex: 1,
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#333",
-  },
-  completedBadge: {
-    backgroundColor: "#4CAF50",
-    borderRadius: 12,
-    width: 24,
-    height: 24,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  stageContent: {
-    padding: 16,
-    backgroundColor: "white",
-  },
-  stageInfoRow: {
-    flexDirection: "row",
-    marginBottom: 8,
-  },
-  stageInfoLabel: {
-    fontSize: 14,
-    fontWeight: "500",
-    color: "#666",
-    width: 60,
-  },
-  stageInfoValue: {
-    fontSize: 14,
-    color: "#333",
-  },
-  stageDescription: {
-    fontSize: 14,
-    color: "#333",
-    lineHeight: 20,
-    marginBottom: 12,
-  },
-  environmentInfo: {
-    flexDirection: "row",
-    marginBottom: 12,
-  },
-  environmentItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginRight: 16,
-  },
-  environmentText: {
-    fontSize: 14,
-    color: "#666",
-    marginLeft: 4,
-  },
-  imagesScrollView: {
-    marginTop: 8,
-  },
-  stageImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 8,
-    marginRight: 8,
-  },
-  pendingStageContent: {
-    padding: 16,
-    backgroundColor: "white",
-    alignItems: "center",
-  },
-  pendingText: {
-    fontSize: 14,
-    color: "#888",
-    marginBottom: 12,
-  },
-  updateButton: {
-    backgroundColor: "#5D3F6A",
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 6,
-  },
-  updateButtonText: {
-    color: "white",
-    fontWeight: "500",
-    fontSize: 14,
-  },
-});

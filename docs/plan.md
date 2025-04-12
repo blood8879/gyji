@@ -82,45 +82,121 @@
 
 ## 컴포넌트 조직화 (Component Organization)
 
-### 1. 디렉토리 구조
+### 1. 최소 필수 컴포넌트 구조
+
 ```
 /components
-  /common           # 공통 UI 컴포넌트
-    Button.tsx
-    Card.tsx
-    Input.tsx
-    Badge.tsx
-    Modal.tsx
-    ProgressBar.tsx
-    Header.tsx
-  /layout           # 레이아웃 관련 컴포넌트
-    BaseLayout.tsx
-    SafeAreaWrapper.tsx
-  /recipe           # 레시피 관련 컴포넌트
-    RecipeCard.tsx
-    IngredientInput.tsx
-    StageCard.tsx
-  /journal          # 양조일지 관련 컴포넌트
-    JournalCard.tsx
-    ImagePicker.tsx
-  /event            # 시음회 관련 컴포넌트
-    EventCard.tsx
-    ParticipantList.tsx
-  /hooks            # 커스텀 훅
-    useTheme.tsx
-    useForm.tsx
-  /contexts         # Context API
-    ThemeContext.tsx
-    AuthContext.tsx
+  /core              # 핵심 UI 원자 컴포넌트
+    Button.tsx       # 다양한 스타일의 버튼(Primary, Secondary, Text, Icon)
+    Input.tsx        # 텍스트/숫자 입력 필드, 에러 처리
+    Typography.tsx   # 텍스트 스타일 (제목, 본문, 라벨 등)
+    Colors.ts        # 색상 상수, 테마 정의
+    Spacing.ts       # 간격, 여백 상수 정의
+    
+  /common            # 공통 복합 컴포넌트
+    Card.tsx         # 레시피/양조일지/시음회 카드 (재사용성 높음)
+    Header.tsx       # 페이지 상단 헤더 (뒤로가기, 제목, 액션 버튼)
+    Badge.tsx        # 상태 표시 뱃지 (공개/비공개, 주종 등)
+    Modal.tsx        # 알림, 확인 모달
+    ImagePicker.tsx  # 사진 촬영/갤러리 선택 통합
+    
+  /auth              # 인증 관련 컴포넌트
+    LoginForm.tsx    # 로그인 폼
+    RegisterForm.tsx # 회원가입 폼
+    AdultVerifier.tsx # 성인인증 관련 컴포넌트
+    
+  /recipe            # 레시피 특화 컴포넌트
+    RecipeCard.tsx   # 레시피 목록용 카드
+    IngredientInput.tsx # 재료 입력 전용 컴포넌트
+    StepEditor.tsx   # 단계별 과정 편집기
+    AlcoholCalculator.tsx # 도수 계산 컴포넌트
+    
+  /journal           # 양조일지 특화 컴포넌트
+    JournalCard.tsx  # 양조일지 목록용 카드
+    PhotoGallery.tsx # 사진 갤러리 (슬라이더)
+    StageIndicator.tsx # 양조 단계 표시
+    
+  /event             # 시음회 특화 컴포넌트
+    EventCard.tsx    # 시음회 목록용 카드
+    ParticipantList.tsx # 참가자 목록
+    ParticipantCounter.tsx # 참가자 수 카운터
+    
+  /layout            # 레이아웃 컴포넌트
+    BaseLayout.tsx   # 모든 페이지 공통 레이아웃
+    SafeAreaView.tsx # 안전 영역 처리 (노치, 홈버튼 등)
+    
+  /hooks             # 커스텀 훅 (최소 필수)
+    useAuth.tsx      # 인증 관련 로직
+    useForm.tsx      # 폼 처리 로직
+    useImagePicker.tsx # 이미지 선택/업로드 로직
 ```
 
-### 2. 컴포넌트 계층 구조
-- **아토믹 디자인 시스템** 적용:
-  - **Atoms**: 버튼, 입력 필드, 뱃지 등 기본 요소
-  - **Molecules**: 검색 바, 카드 헤더 등 기본 요소 조합
-  - **Organisms**: 완전한 카드, 양식 등 복잡한 UI 블록
-  - **Templates**: 페이지 레이아웃
-  - **Pages**: 최종 화면
+### 2. 최소 컴포넌트의 세부 구현 사항
+
+#### A. 인증/시작
+- **LoginForm**: 이메일/비밀번호 입력, 로그인 버튼, 에러 처리
+- **AdultVerifier**: 성인인증(본인인증) 프로세스, 결과 처리
+
+#### B. 레시피 관련
+- **RecipeCard**: 이름, 종류(Badge), 간략 설명, 공개 여부 표시
+- **IngredientInput**: 재료명, 양, 단위 입력(추가/삭제 기능)
+- **StepEditor**: 단계별 과정 추가/수정/삭제 (번호 자동 부여)
+
+#### C. 양조일지 관련
+- **JournalCard**: 일자, 대표 사진, 현재 단계 표시
+- **PhotoGallery**: 사진 여러 장 슬라이드, 추가 기능
+- **StageIndicator**: 현재 어떤 단계인지 시각적 표시(진행 바 등)
+
+#### D. 시음회 관련
+- **EventCard**: 모임명, 일시, 장소, 참가자 수/목표 수 표시
+- **ParticipantList**: 참가자 목록(아바타), 참가 신청 버튼
+- **ParticipantCounter**: 인원 표시, ProgressBar 활용(10/20명)
+
+### 3. 공통 스타일/테마 정의
+
+#### A. 색상 시스템
+- **기본 색상**: primary, secondary, background, text, error
+- **의미 색상**: success, warning, info
+- **주종별 색상**: 막걸리(쌀색), 맥주(황금색), 와인(자주색) 등
+
+#### B. 타이포그래피
+- **제목(Heading)**: 화면 제목, 섹션 제목(크기별 3단계)
+- **본문(Body)**: 기본 텍스트, 강조 텍스트, 작은 텍스트
+- **라벨(Label)**: 입력 필드, 버튼 등의 라벨
+
+#### C. 아이콘 세트
+- 최소 필수 아이콘: 홈, 추가, 카메라, 갤러리, 설정, 공유, 좋아요 등
+
+### 4. 페이지별 컴포넌트 사용 예시
+
+#### 레시피 목록 페이지
+```jsx
+<BaseLayout>
+  <Header title="레시피 목록" rightAction={<Button iconOnly="plus" />} />
+  <FlatList
+    data={recipes}
+    renderItem={({item}) => <RecipeCard recipe={item} />}
+    keyExtractor={item => item.id}
+  />
+</BaseLayout>
+```
+
+#### 양조일지 작성 페이지
+```jsx
+<BaseLayout>
+  <Header title="새 양조일지" />
+  <Form>
+    <Input label="제목" />
+    <ImagePicker multiple />
+    <DatePicker label="기록 일자" />
+    <StageIndicator currentStage={2} totalStages={5} />
+    <Input label="메모" multiline />
+    <Button primary>저장하기</Button>
+  </Form>
+</BaseLayout>
+```
+
+이상의 컴포넌트 설계는 최소한의 작업량으로 PRD와 USECASE에 명시된 주요 기능을 구현하되, 확장성과 재사용성을 고려한 모듈화된 접근 방식입니다. 실제 개발 과정에서는 이 구조를 기반으로 컴포넌트를 점진적으로 구체화하고 필요에 따라 세분화할 수 있습니다.
 
 ## 페이지 구조 (Page Structure)
 
