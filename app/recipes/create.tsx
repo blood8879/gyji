@@ -276,10 +276,10 @@ export default function CreateRecipeScreen() {
             <StyledText className="text-base font-medium text-gray-600 mb-2">
               공개 설정
             </StyledText>
-            <StyledView className="flex-row border border-gray-300 rounded-lg overflow-hidden">
+            <StyledView className="flex-row border border-gray-200 rounded-[8px] overflow-hidden">
               <StyledTouchableOpacity
                 className={`flex-1 py-3 items-center ${
-                  isPublic ? "bg-emerald-500" : "bg-gray-50"
+                  isPublic ? "bg-emerald-500" : "bg-white"
                 }`}
                 onPress={() => setIsPublic(true)}
               >
@@ -399,7 +399,7 @@ export default function CreateRecipeScreen() {
           {steps.map((step, index) => (
             <StyledView
               key={step.id}
-              className="mb-4 p-3 border border-gray-200 rounded-lg bg-gray-50"
+              className="mb-4 p-3 border border-gray-200 rounded-[8px] bg-white"
             >
               <StyledView className="flex-row justify-between items-center mb-2">
                 <StyledText className="text-base font-bold text-emerald-600">
