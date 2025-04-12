@@ -68,6 +68,18 @@ export default function TabLayout() {
       />
 
       <Tabs.Screen
+        name="(events)/index"
+        options={{
+          title: "시음회",
+          tabBarLabel: "시음회",
+          href: null,
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="people-outline" size={size} color={color} />
+          ),
+        }}
+      />
+
+      <Tabs.Screen
         name="(profile)/index"
         options={{
           title: "마이페이지",

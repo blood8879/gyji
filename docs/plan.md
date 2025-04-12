@@ -132,10 +132,7 @@
   /login.tsx         # 로그인 페이지
   /register.tsx      # 회원가입 페이지
   /adult-verification.tsx # 성인인증 페이지
-  /(tabs)            # 탭 내비게이션
-    /_layout.tsx     # 탭 레이아웃
-    /index.tsx       # 홈 탭
-    /recipes         # 레시피 관련 페이지
+  /recipes         # 레시피 관련 페이지
       /index.tsx     # 레시피 목록
       /[id].tsx      # 레시피 상세
       /create.tsx    # 레시피 생성/편집
@@ -150,6 +147,10 @@
     /profile         # 프로필 관련 페이지
       /index.tsx     # 프로필 메인
       /settings.tsx  # 설정
+  /(tabs)            # 탭 내비게이션
+    /_layout.tsx     # 탭 레이아웃
+    /index.tsx       # 홈 탭
+    
 ```
 
 ### 2. 페이지 간 관계
