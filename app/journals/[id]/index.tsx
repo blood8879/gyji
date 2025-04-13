@@ -157,7 +157,10 @@ export default function JournalDetailScreen() {
             <Text className="text-base font-semibold text-gray-800">
               양조 기록
             </Text>
-            <TouchableOpacity className="flex-row bg-orange-400 py-2 px-3 rounded-full items-center">
+            <TouchableOpacity
+              className="flex-row bg-orange-400 py-2 px-3 rounded-full items-center"
+              onPress={() => router.push(`/journals/${id}/add-record`)}
+            >
               <Ionicons name="add" size={20} color="#FFF" />
               <Text className="text-white text-sm font-medium ml-1">
                 기록 추가

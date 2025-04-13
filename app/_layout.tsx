@@ -51,6 +51,9 @@ export default function RootLayout() {
         {/* 인증 필요 화면들 */}
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
 
+        {/* 양조일지 화면들 */}
+        <Stack.Screen name="journals" options={{ headerShown: false }} />
+
         {/* 인증 화면들 */}
         <Stack.Screen name="login" options={{ headerShown: false }} />
 
