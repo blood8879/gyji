@@ -1,16 +1,17 @@
 import React from "react";
 import {
-  View,
-  Text,
-  SafeAreaView,
-  ScrollView,
+  View as DefaultView,
+  Text as DefaultText,
+  SafeAreaView as DefaultSafeAreaView,
+  ScrollView as DefaultScrollView,
   Image,
-  TouchableOpacity,
+  TouchableOpacity as DefaultTouchableOpacity,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { Ionicons } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
+import { LinearGradient as DefaultLinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
+import { styled } from "nativewind";
 
 import {
   Card,
@@ -19,6 +20,14 @@ import {
   CardPressable,
 } from "../../components/ui";
 import { theme } from "../../constants/theme";
+
+// NativeWind로 스타일링된 컴포넌트 생성
+const View = styled(DefaultView);
+const Text = styled(DefaultText);
+const ScrollView = styled(DefaultScrollView);
+const TouchableOpacity = styled(DefaultTouchableOpacity);
+const SafeAreaView = styled(DefaultSafeAreaView);
+const LinearGradient = styled(DefaultLinearGradient);
 
 export default function HomeScreen() {
   // 더미 데이터
