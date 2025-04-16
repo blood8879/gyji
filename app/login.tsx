@@ -8,45 +8,65 @@ import {
   Platform,
   KeyboardAvoidingView,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { StatusBar } from "expo-status-bar";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-
 import { Button } from "../components/ui";
-import { theme } from "../constants/theme";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function LoginScreen() {
-  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const {
+    signInWithGoogleAuth,
+    signInWithKakaoAuth,
+    isLoading,
+    isAuthenticated,
+  } = useAuth();
+  const [localLoading, setLocalLoading] = useState<string | null>(null);
 
-  // 소셜 로그인 처리 함수
-  const handleSocialLogin = async (provider: string) => {
-    try {
-      setIsLoading(true);
-
-      // TODO: 실제 소셜 인증 로직 구현
-      // 예: const { user, error } = await supabase.auth.signInWithProvider(provider);
-
-      // 임시 로그인 로직 (개발용)
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      console.log(`${provider} 로그인 시도`);
-
-      // 로그인 성공 처리
-      await AsyncStorage.setItem("user-token", "dummy-token");
-
-      // 바로 메인 화면으로 이동
+  // 인증 상태가 변경될 때 자동으로 홈 화면으로 리다이렉트
+  React.useEffect(() => {
+    if (isAuthenticated) {
       router.replace("/(tabs)");
+    }
+  }, [isAuthenticated, router]);
+
+  // 구글 로그인 처리
+  const handleGoogleLogin = async () => {
+    try {
+      setLocalLoading("google");
+      await signInWithGoogleAuth();
+      // 로그인 성공 시 AuthContext의 isAuthenticated가 true로 변경되면서
+      // useEffect 훅에서 자동으로 리다이렉트됩니다.
     } catch (error) {
-      console.error(`${provider} 로그인 오류:`, error);
+      console.error("구글 로그인 오류:", error);
       Alert.alert(
         "로그인 실패",
-        "로그인 중 오류가 발생했습니다. 다시 시도해주세요."
+        "구글 로그인 중 오류가 발생했습니다. 다시 시도해주세요."
       );
     } finally {
-      setIsLoading(false);
+      setLocalLoading(null);
+    }
+  };
+
+  // 카카오 로그인 처리
+  const handleKakaoLogin = async () => {
+    try {
+      setLocalLoading("kakao");
+      await signInWithKakaoAuth();
+      // 로그인 성공 시 AuthContext의 isAuthenticated가 true로 변경되면서
+      // useEffect 훅에서 자동으로 리다이렉트됩니다.
+    } catch (error) {
+      console.error("카카오 로그인 오류:", error);
+      Alert.alert(
+        "로그인 실패",
+        "카카오 로그인 중 오류가 발생했습니다. 다시 시도해주세요."
+      );
+    } finally {
+      setLocalLoading(null);
     }
   };
 
@@ -84,95 +104,66 @@ export default function LoginScreen() {
 
             {/* 소셜 로그인 버튼 */}
             <View className="mb-8 space-y-4">
-              <Button
-                size="lg"
-                variant="outline"
-                icon="logo-google"
-                iconPosition="left"
-                style={{
-                  borderRadius: 12,
-                  borderWidth: 0.5, // 테두리 두께 줄임
-                }}
-                className="w-full bg-white border-neutral-300 dark:border-neutral-700"
-                textStyle={{ color: "#000" }}
-                onPress={() => handleSocialLogin("google")}
-                disabled={isLoading}
-              >
-                구글로 시작하기
-              </Button>
+              {isLoading ? (
+                <View className="items-center py-6">
+                  <ActivityIndicator size="large" color="#10b981" />
+                  <Text className="mt-2 text-emerald-600">
+                    로그인 상태 확인 중...
+                  </Text>
+                </View>
+              ) : (
+                <>
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    icon="logo-google"
+                    iconPosition="left"
+                    style={{
+                      borderRadius: 12,
+                      borderWidth: 0.5, // 테두리 두께 줄임
+                    }}
+                    className="w-full bg-white border-neutral-300 dark:border-neutral-700"
+                    textStyle={{ color: "#000" }}
+                    onPress={handleGoogleLogin}
+                    disabled={isLoading || localLoading !== null}
+                  >
+                    {localLoading === "google" ? (
+                      <View className="flex-row items-center">
+                        <ActivityIndicator size="small" color="#4285F4" />
+                        <Text className="ml-2 text-neutral-600">
+                          처리 중...
+                        </Text>
+                      </View>
+                    ) : (
+                      "구글로 시작하기"
+                    )}
+                  </Button>
 
-              <Button
-                size="lg"
-                style={{
-                  backgroundColor: "#FEE500",
-                  borderRadius: 12,
-                  borderWidth: 0, // 테두리 제거
-                }}
-                textStyle={{ color: "#000" }}
-                className="w-full"
-                onPress={() => handleSocialLogin("kakao")}
-                disabled={isLoading}
-              >
-                카카오로 시작하기
-              </Button>
-
-              {Platform.OS === "ios" && (
-                <Button
-                  size="lg"
-                  variant="outline"
-                  icon="logo-apple"
-                  iconPosition="left"
-                  style={{
-                    borderRadius: 12,
-                    backgroundColor: "#000",
-                    borderWidth: 0, // 테두리 제거
-                  }}
-                  className="w-full"
-                  onPress={() => handleSocialLogin("apple")}
-                  disabled={isLoading}
-                >
-                  Apple로 시작하기
-                </Button>
+                  <Button
+                    size="lg"
+                    style={{
+                      backgroundColor: "#FEE500",
+                      borderRadius: 12,
+                      borderWidth: 0, // 테두리 제거
+                    }}
+                    textStyle={{ color: "#000" }}
+                    className="w-full"
+                    onPress={handleKakaoLogin}
+                    disabled={isLoading || localLoading !== null}
+                  >
+                    {localLoading === "kakao" ? (
+                      <View className="flex-row items-center">
+                        <ActivityIndicator size="small" color="#3C1E1E" />
+                        <Text className="ml-2 text-neutral-600">
+                          처리 중...
+                        </Text>
+                      </View>
+                    ) : (
+                      "카카오로 시작하기"
+                    )}
+                  </Button>
+                </>
               )}
-            </View>
-
-            {/* 구분선 */}
-            <View className="flex-row items-center mb-8">
-              <View className="flex-1 h-px bg-neutral-200 dark:bg-neutral-700" />
-              <Text className="mx-4 text-neutral-500 dark:text-neutral-400">
-                또는
-              </Text>
-              <View className="flex-1 h-px bg-neutral-200 dark:bg-neutral-700" />
-            </View>
-
-            {/* 이메일로 시작하기 버튼 */}
-            <Button
-              size="lg"
-              variant="secondary"
-              icon="mail-outline"
-              iconPosition="left"
-              style={{
-                borderRadius: 12,
-                borderWidth: 0, // 테두리 제거
-              }}
-              className="w-full mb-8"
-              onPress={() => router.push("/register" as any)}
-              disabled={isLoading}
-            >
-              이메일로 시작하기
-            </Button>
-
-            {/* 하단 텍스트 */}
-            <View className="flex-row justify-center mt-4">
-              <Text className="text-neutral-600 dark:text-neutral-400">
-                이미 계정이 있으신가요?
-              </Text>
-              <TouchableOpacity
-                className="ml-1"
-                onPress={() => router.push("/register" as any)}
-              >
-                <Text className="font-semibold text-secondary">로그인</Text>
-              </TouchableOpacity>
             </View>
           </View>
         </ScrollView>

@@ -7,6 +7,7 @@ import {
   Platform,
   Modal,
   Keyboard,
+  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
@@ -14,6 +15,7 @@ import { useState, useRef, useEffect } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { styled } from "nativewind";
 import React from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // TailwindCSS를 사용하기 위해 컴포넌트를 래핑
 const StyledView = styled(View);
@@ -23,7 +25,16 @@ const StyledTouchableOpacity = styled(TouchableOpacity);
 const StyledScrollView = styled(ScrollView);
 const StyledSafeAreaView = styled(SafeAreaView);
 
-type Ingredient = {
+// 컴포넌트 불러오기
+import FormHeader from "../../components/recipe/FormHeader";
+import BasicInfo from "../../components/recipe/BasicInfo";
+import IngredientsForm from "../../components/recipe/IngredientsForm";
+import StepsForm from "../../components/recipe/StepsForm";
+
+// Supabase 함수 및 타입 불러오기
+import { saveRecipe, saveIngredients, saveSteps } from "../../lib/supabase";
+
+type IngredientType = {
   id: string;
   name: string;
   amount: string;
@@ -31,7 +42,7 @@ type Ingredient = {
   isCustomUnit: boolean;
 };
 
-type Step = {
+type StepType = {
   id: string;
   description: string;
   days: string;
@@ -42,14 +53,15 @@ export default function CreateRecipeScreen() {
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [category, setCategory] = useState("막걸리"); // 기본값으로 막걸리 설정
+  const [category, setCategory] = useState("막걸리");
   const [isPublic, setIsPublic] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const [ingredients, setIngredients] = useState<Ingredient[]>([
+  const [ingredients, setIngredients] = useState<IngredientType[]>([
     { id: "1", name: "", amount: "", unit: "g", isCustomUnit: false },
   ]);
 
-  const [steps, setSteps] = useState<Step[]>([
+  const [steps, setSteps] = useState<StepType[]>([
     { id: "1", description: "", days: "" },
   ]);
 
@@ -71,7 +83,7 @@ export default function CreateRecipeScreen() {
 
   const updateIngredient = (
     id: string,
-    field: keyof Ingredient,
+    field: keyof IngredientType,
     value: any // 타입 에러 수정을 위해 any 타입으로 변경
   ) => {
     setIngredients(
@@ -92,15 +104,103 @@ export default function CreateRecipeScreen() {
     }
   };
 
-  const updateStep = (id: string, field: keyof Step, value: string) => {
+  const updateStep = (id: string, field: keyof StepType, value: string) => {
     setSteps(
       steps.map((step) => (step.id === id ? { ...step, [field]: value } : step))
     );
   };
 
-  const handleSave = () => {
-    // 저장 기능 구현 없이 라우터만 작동
-    router.back();
+  const handleSave = async () => {
+    try {
+      // 폼 유효성 검사
+      if (!title.trim()) {
+        Alert.alert("알림", "레시피 제목을 입력해주세요.");
+        return;
+      }
+
+      if (!category) {
+        Alert.alert("알림", "카테고리를 선택해주세요.");
+        return;
+      }
+
+      // 재료 유효성 검사
+      const hasEmptyIngredient = ingredients.some((ing) => !ing.name.trim());
+      if (hasEmptyIngredient) {
+        Alert.alert(
+          "알림",
+          "비어있는 재료가 있습니다. 모든 재료명을 입력하거나 불필요한 항목을 삭제해주세요."
+        );
+        return;
+      }
+
+      // 단계 유효성 검사
+      const hasEmptyStep = steps.some((step) => !step.description.trim());
+      if (hasEmptyStep) {
+        Alert.alert(
+          "알림",
+          "비어있는 단계가 있습니다. 모든 단계를 입력하거나 불필요한 항목을 삭제해주세요."
+        );
+        return;
+      }
+
+      // 키보드 닫기
+      Keyboard.dismiss();
+
+      // 저장 중 상태로 변경
+      setIsSaving(true);
+
+      // 임시 사용자 ID (실제 앱에서는 인증된 사용자 ID를 사용해야 함)
+      const userToken = await AsyncStorage.getItem("user-token");
+      const userId = userToken || "temp-user-id";
+
+      // 레시피 저장
+      const recipeData = {
+        title,
+        description,
+        category,
+        is_public: isPublic,
+        user_id: userId,
+      };
+
+      const savedRecipe = await saveRecipe(recipeData);
+      const recipeId = savedRecipe.id;
+
+      // 재료 저장
+      const ingredientsData = ingredients.map((ing, index) => ({
+        recipe_id: recipeId,
+        name: ing.name,
+        amount: ing.amount,
+        unit: ing.unit,
+      }));
+
+      await saveIngredients(ingredientsData);
+
+      // 단계 저장
+      const stepsData = steps.map((step, index) => ({
+        recipe_id: recipeId,
+        description: step.description,
+        days: step.days,
+        order: index + 1,
+      }));
+
+      await saveSteps(stepsData);
+
+      // 저장 성공 알림
+      Alert.alert("성공", "레시피가 저장되었습니다.", [
+        {
+          text: "확인",
+          onPress: () => router.back(),
+        },
+      ]);
+    } catch (error) {
+      console.error("레시피 저장 오류:", error);
+      Alert.alert(
+        "오류",
+        "레시피 저장 중 오류가 발생했습니다. 다시 시도해주세요."
+      );
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const inputClass =
@@ -197,311 +297,36 @@ export default function CreateRecipeScreen() {
 
   return (
     <StyledSafeAreaView className="flex-1 bg-gray-100">
-      <StyledView className="flex-row items-center justify-between px-4 py-3 bg-white border-b border-gray-200">
-        <StyledTouchableOpacity onPress={() => router.back()} className="p-1">
-          <Ionicons name="arrow-back" size={24} color="#333" />
-        </StyledTouchableOpacity>
-        <StyledText className="text-lg font-bold text-gray-800">
-          레시피 만들기
-        </StyledText>
-        <StyledTouchableOpacity
-          onPress={handleSave}
-          className="py-1.5 px-3 bg-emerald-500 rounded-[12px]"
-        >
-          <StyledText className="text-white font-semibold">저장</StyledText>
-        </StyledTouchableOpacity>
-      </StyledView>
+      {/* 헤더 */}
+      <FormHeader
+        title="레시피 만들기"
+        onSave={handleSave}
+        isSaving={isSaving}
+      />
 
+      {/* 스크롤 영역 */}
       <StyledScrollView className="flex-1 px-4 py-4">
-        <StyledView className="mb-4 bg-white rounded-xl p-4 shadow-sm">
-          <StyledText className="text-lg font-bold text-gray-800 mb-4">
-            기본 정보
-          </StyledText>
+        {/* 기본 정보 */}
+        <BasicInfo
+          title={title}
+          setTitle={setTitle}
+          description={description}
+          setDescription={setDescription}
+          category={category}
+          setCategory={setCategory}
+          isPublic={isPublic}
+          setIsPublic={setIsPublic}
+        />
 
-          <StyledView className="mb-4">
-            <StyledText className="text-base font-medium text-gray-600 mb-2">
-              제목
-            </StyledText>
-            <StyledTextInput
-              className={inputClass}
-              value={title}
-              onChangeText={setTitle}
-              placeholder="레시피 제목을 입력하세요"
-            />
-          </StyledView>
+        {/* 재료 입력 폼 */}
+        <IngredientsForm
+          ingredients={ingredients}
+          setIngredients={setIngredients}
+        />
 
-          <StyledView className="mb-4">
-            <StyledText className="text-base font-medium text-gray-600 mb-2">
-              소개
-            </StyledText>
-            <StyledTextInput
-              className={multilineInputClass}
-              value={description}
-              onChangeText={setDescription}
-              placeholder="레시피에 대한 간단한 소개를 입력하세요"
-              multiline
-              numberOfLines={4}
-              textAlignVertical="top"
-            />
-          </StyledView>
-
-          <StyledView className="mb-4">
-            <StyledText className="text-base font-medium text-gray-600 mb-2">
-              카테고리
-            </StyledText>
-            <StyledView className="flex-row flex-wrap">
-              {categories.map((cat) => (
-                <StyledTouchableOpacity
-                  key={cat}
-                  className={`border rounded-full py-2 px-3.5 mr-2 mb-2 ${
-                    category === cat
-                      ? "bg-emerald-500 border-emerald-500"
-                      : "border-gray-300 bg-gray-50"
-                  }`}
-                  onPress={() => setCategory(cat)}
-                >
-                  <StyledText
-                    className={`text-sm ${
-                      category === cat ? "text-white" : "text-gray-600"
-                    }`}
-                  >
-                    {cat}
-                  </StyledText>
-                </StyledTouchableOpacity>
-              ))}
-            </StyledView>
-          </StyledView>
-
-          <StyledView className="mb-4">
-            <StyledText className="text-base font-medium text-gray-600 mb-2">
-              공개 설정
-            </StyledText>
-            <StyledView className="flex-row border border-gray-200 rounded-[8px] overflow-hidden">
-              <StyledTouchableOpacity
-                className={`flex-1 py-3 items-center ${
-                  isPublic ? "bg-emerald-500" : "bg-white"
-                }`}
-                onPress={() => setIsPublic(true)}
-              >
-                <StyledText
-                  className={`font-medium ${
-                    isPublic ? "text-white" : "text-gray-600"
-                  }`}
-                >
-                  공개
-                </StyledText>
-              </StyledTouchableOpacity>
-              <StyledTouchableOpacity
-                className={`flex-1 py-3 items-center ${
-                  !isPublic ? "bg-emerald-500" : "bg-gray-50"
-                }`}
-                onPress={() => setIsPublic(false)}
-              >
-                <StyledText
-                  className={`font-medium ${
-                    !isPublic ? "text-white" : "text-gray-600"
-                  }`}
-                >
-                  비공개
-                </StyledText>
-              </StyledTouchableOpacity>
-            </StyledView>
-          </StyledView>
-        </StyledView>
-
-        <StyledView className="mb-4 bg-white rounded-xl p-4 shadow-sm">
-          <StyledText className="text-lg font-bold text-gray-800 mb-4">
-            재료
-          </StyledText>
-          {ingredients.map((ingredient, index) => (
-            <StyledView
-              key={ingredient.id}
-              className="flex-row items-center mb-3"
-            >
-              <StyledTextInput
-                className={ingredientNameClass}
-                value={ingredient.name}
-                onChangeText={(value) =>
-                  updateIngredient(ingredient.id, "name", value)
-                }
-                placeholder="재료명"
-              />
-              <StyledTextInput
-                className={ingredientAmountClass}
-                value={ingredient.amount}
-                onChangeText={(value) =>
-                  updateIngredient(ingredient.id, "amount", value)
-                }
-                placeholder="양"
-                keyboardType="numeric"
-              />
-              {ingredient.isCustomUnit ? (
-                <StyledTextInput
-                  ref={createInputRef(ingredient.id)}
-                  className={customUnitInputClass}
-                  value={ingredient.unit}
-                  onChangeText={(value) =>
-                    handleUnitChange(ingredient.id, value)
-                  }
-                  placeholder="직접 입력"
-                  // 입력 안정성을 위해 더 많은 props 추가
-                  blurOnSubmit={false}
-                  returnKeyType="done"
-                  selectTextOnFocus={false}
-                />
-              ) : (
-                <StyledTouchableOpacity
-                  className={`${ingredientUnitClass} justify-center items-center flex-row`}
-                  onPress={() => {
-                    setSelectedIngredientId(ingredient.id);
-                    setShowUnitModal(true);
-                  }}
-                >
-                  <StyledText className="text-gray-700">
-                    {ingredient.unit || "단위"}
-                  </StyledText>
-                  <Ionicons
-                    name="chevron-down"
-                    size={16}
-                    color="#666"
-                    style={{ marginLeft: 2 }}
-                  />
-                </StyledTouchableOpacity>
-              )}
-              <StyledTouchableOpacity
-                className="p-1"
-                onPress={() => removeIngredient(ingredient.id)}
-                disabled={ingredients.length === 1}
-              >
-                <Ionicons
-                  name="close-circle"
-                  size={24}
-                  color={ingredients.length === 1 ? "#ccc" : "#ff6b6b"}
-                />
-              </StyledTouchableOpacity>
-            </StyledView>
-          ))}
-          <StyledTouchableOpacity
-            className="flex-row items-center justify-center p-3 border border-dashed border-gray-300 rounded-lg mt-2"
-            onPress={addIngredient}
-          >
-            <Ionicons name="add-circle" size={20} color="#10b981" />
-            <StyledText className="ml-2 text-emerald-600 font-medium">
-              재료 추가
-            </StyledText>
-          </StyledTouchableOpacity>
-        </StyledView>
-
-        <StyledView className="mb-4 bg-white rounded-xl p-4 shadow-sm">
-          <StyledText className="text-lg font-bold text-gray-800 mb-4">
-            양조 단계
-          </StyledText>
-          {steps.map((step, index) => (
-            <StyledView
-              key={step.id}
-              className="mb-4 p-3 border border-gray-200 rounded-[8px] bg-white"
-            >
-              <StyledView className="flex-row justify-between items-center mb-2">
-                <StyledText className="text-base font-bold text-emerald-600">
-                  단계 {index + 1}
-                </StyledText>
-                <StyledTouchableOpacity
-                  className="p-1"
-                  onPress={() => removeStep(step.id)}
-                  disabled={steps.length === 1}
-                >
-                  <Ionicons
-                    name="close-circle"
-                    size={24}
-                    color={steps.length === 1 ? "#ccc" : "#ff6b6b"}
-                  />
-                </StyledTouchableOpacity>
-              </StyledView>
-              <StyledTextInput
-                className={
-                  multilineInputClass.replace("bg-gray-50", "bg-white") +
-                  " mb-2"
-                }
-                value={step.description}
-                onChangeText={(value) =>
-                  updateStep(step.id, "description", value)
-                }
-                placeholder="단계에 대한 설명을 입력하세요"
-                multiline
-                numberOfLines={3}
-                textAlignVertical="top"
-              />
-              <StyledView className="flex-row items-center mt-2">
-                <StyledText className="text-sm text-gray-600 mr-2">
-                  소요 일수
-                </StyledText>
-                <StyledTextInput
-                  className={smallInputClass}
-                  value={step.days}
-                  onChangeText={(value) => updateStep(step.id, "days", value)}
-                  placeholder="일수"
-                  keyboardType="numeric"
-                />
-                <StyledText className="text-sm text-gray-600">일</StyledText>
-              </StyledView>
-            </StyledView>
-          ))}
-          <StyledTouchableOpacity
-            className="flex-row items-center justify-center p-3 border border-dashed border-gray-300 rounded-lg mt-2"
-            onPress={addStep}
-          >
-            <Ionicons name="add-circle" size={20} color="#10b981" />
-            <StyledText className="ml-2 text-emerald-600 font-medium">
-              단계 추가
-            </StyledText>
-          </StyledTouchableOpacity>
-        </StyledView>
+        {/* 단계 입력 폼 */}
+        <StepsForm steps={steps} setSteps={setSteps} />
       </StyledScrollView>
-
-      {/* 단위 선택 모달 */}
-      <Modal
-        visible={showUnitModal}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={() => {
-          setShowUnitModal(false);
-          setSelectedIngredientId(null);
-        }}
-      >
-        <StyledView className="flex-1 justify-center items-center bg-black bg-opacity-50">
-          <StyledView className="bg-white rounded-lg p-4 w-[250px] shadow-xl">
-            <StyledText className="text-lg font-bold text-gray-800 mb-3 text-center">
-              단위 선택
-            </StyledText>
-            {commonUnits.map((unit) => (
-              <StyledTouchableOpacity
-                key={unit}
-                className="py-3 px-4 border-b border-gray-100"
-                onPress={() => {
-                  if (selectedIngredientId) {
-                    handleUnitSelection(unit, selectedIngredientId);
-                  }
-                }}
-              >
-                <StyledText className="text-center text-gray-700">
-                  {unit}
-                </StyledText>
-              </StyledTouchableOpacity>
-            ))}
-            <StyledTouchableOpacity
-              className="mt-3 py-2 px-4 bg-gray-200 rounded-lg"
-              onPress={() => {
-                setShowUnitModal(false);
-                setSelectedIngredientId(null);
-              }}
-            >
-              <StyledText className="text-center text-gray-700">
-                취소
-              </StyledText>
-            </StyledTouchableOpacity>
-          </StyledView>
-        </StyledView>
-      </Modal>
     </StyledSafeAreaView>
   );
 }

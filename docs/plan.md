@@ -9,14 +9,14 @@
   - 안전 영역(SafeArea) 관리
   - 다크/라이트 모드 지원
 
-### 2. **Card**
+### 2. **Card** [✓]
 - 목적: 레시피, 양조일지, 시음회 등 모든 항목을 표시하는 통일된 카드 컴포넌트
 - 특징:
   - 그림자, 테두리, 모서리 둥글기(border-radius) 일관성 유지
   - 다양한 크기 옵션(small, medium, large)
   - 터치 가능 여부(TouchableOpacity 포함 여부)
 
-### 3. **Button**
+### 3. **Button** [✓]
 - 목적: 앱 전체에서 사용할 통일된 버튼 디자인
 - 변형:
   - Primary: 주요 행동(저장, 등록 등)
@@ -25,7 +25,7 @@
   - Icon: 아이콘만 있는 버튼
   - IconText: 아이콘과 텍스트가 함께 있는 버튼
 
-### 4. **Input**
+### 4. **Input** [✓]
 - 목적: 다양한 입력 필드 통합 관리
 - 변형:
   - TextInput: 일반 텍스트 입력
@@ -68,8 +68,8 @@
   - 색상 커스터마이징 지원
   - 애니메이션 효과
 
-### 10. **Header**
-- 목적: 각 화면 상단의 일관된 헤더 제공
+### 10. **Header** [✓]
+- 목적: 각 화면 상단의 일관된 헤더 제공 (FormHeader 컴포넌트로 구현됨)
 - 특징:
   - 뒤로가기 버튼
   - 제목
@@ -77,6 +77,104 @@
   - 그라데이션 배경 옵션
 
 이러한 컴포넌트들을 개발하면 PRD와 USECASE에서 명시된 주요 기능(레시피 관리, 양조일지 기록, 시음회 관리 등)을 효율적으로 구현할 수 있으며, UI의 일관성을 유지하고 코드 재사용성을 높일 수 있습니다. 또한 이 컴포넌트들은 모두 다크모드와 라이트모드를 지원하도록 설계하여 사용자 경험을 향상시킬 수 있습니다.
+
+# 컴포넌트 구성과 페이지 구조 및 구현 접근 방식
+
+## 컴포넌트 조직화 (Component Organization)
+
+### 1. 현재 구현된 컴포넌트 구조
+
+```
+/components
+  /ui                # 핵심 UI 원자 컴포넌트
+    Button.tsx [✓]   # 다양한 스타일의 버튼(Primary, Secondary, Text, Icon)
+    Input.tsx [✓]    # 텍스트/숫자 입력 필드, 에러 처리
+    Card.tsx [✓]     # 레시피/양조일지/시음회 카드 (재사용성 높음)
+    IconSymbol.tsx [✓] # 아이콘 심볼 컴포넌트
+    TabBarBackground.tsx [✓] # 탭 바 배경 컴포넌트
+    
+  /recipe            # 레시피 특화 컴포넌트
+    FormHeader.tsx [✓] # 폼 상단 헤더 (뒤로가기, 제목, 저장 버튼)
+    BasicInfo.tsx [✓]  # 레시피 기본 정보 입력 영역
+    IngredientsForm.tsx # 재료 입력 폼 (개발 중)
+    StepsForm.tsx     # 단계별 과정 입력 폼
+```
+
+### 2. 추가 필요한 컴포넌트
+
+```
+/components
+  /ui
+    Badge.tsx        # 상태 표시 뱃지 (공개/비공개, 주종 등)
+    Modal.tsx        # 알림, 확인 모달
+    ProgressBar.tsx  # 진행 상태 표시바
+    
+  /common            # 공통 복합 컴포넌트
+    Header.tsx       # 페이지 상단 헤더 (일반 화면용)
+    ImagePicker.tsx  # 사진 촬영/갤러리 선택 통합
+    
+  /auth              # 인증 관련 컴포넌트
+    LoginForm.tsx    # 로그인 폼
+    RegisterForm.tsx # 회원가입 폼
+    
+  /recipe            # 레시피 특화 컴포넌트
+    RecipeCard.tsx   # 레시피 목록용 카드
+    AlcoholCalculator.tsx # 도수 계산 컴포넌트
+    
+  /journal           # 양조일지 특화 컴포넌트
+    JournalCard.tsx  # 양조일지 목록용 카드
+    PhotoGallery.tsx # 사진 갤러리 (슬라이더)
+    StageIndicator.tsx # 양조 단계 표시
+    
+  /event             # 시음회 특화 컴포넌트
+    EventCard.tsx    # 시음회 목록용 카드
+    ParticipantList.tsx # 참가자 목록
+    ParticipantCounter.tsx # 참가자 수 카운터
+    
+  /layout            # 레이아웃 컴포넌트
+    BaseLayout.tsx   # 모든 페이지 공통 레이아웃
+    
+  /hooks             # 커스텀 훅 (최소 필수)
+    useAuth.tsx      # 인증 관련 로직
+    useForm.tsx      # 폼 처리 로직
+    useImagePicker.tsx # 이미지 선택/업로드 로직
+    useRecipe.tsx    # 레시피 관련 로직
+```
+
+### 3. 레시피 생성 화면 필요 컴포넌트
+현재 레시피 생성 화면(`app/recipes/create.tsx`)을 위해 우선적으로 개발이 필요한 컴포넌트:
+- [✓] FormHeader.tsx - 완료
+- [✓] BasicInfo.tsx - 완료
+- [✓] IngredientsForm.tsx - 완료
+- [✓] StepsForm.tsx - 완료
+
+### 4. 최소 컴포넌트의 세부 구현 사항
+
+#### A. 인증/시작
+- [✓] **로그인**: 이메일/비밀번호 입력, 소셜 로그인(구글, 카카오), 에러 처리
+- **AdultVerifier**: 성인인증(본인인증) 프로세스, 결과 처리
+
+#### B. 레시피 관련
+- **RecipeCard**: 이름, 종류(Badge), 간략 설명, 공개 여부 표시
+- [✓] **BasicInfo**: 제목, 설명, 카테고리, 공개/비공개 설정
+- [✓] **IngredientsForm**: 재료명, 양, 단위 입력(추가/삭제 기능)
+- [✓] **StepsForm**: 단계별 과정 추가/수정/삭제 (번호 자동 부여)
+
+#### C. 양조일지 관련
+- **JournalCard**: 일자, 대표 사진, 현재 단계 표시
+- **PhotoGallery**: 사진 여러 장 슬라이드, 추가 기능
+- **StageIndicator**: 현재 어떤 단계인지 시각적 표시(진행 바 등)
+
+#### D. 시음회 관련
+- **EventCard**: 모임명, 일시, 장소, 참가자 수/목표 수 표시
+- **ParticipantList**: 참가자 목록(아바타), 참가 신청 버튼
+- **ParticipantCounter**: 인원 표시, ProgressBar 활용(10/20명)
+
+### 5. Supabase 데이터 모델 및 인증 [✓]
+- [✓] `Recipe`: 레시피 기본 정보 모델
+- [✓] `Ingredient`: 재료 정보 모델
+- [✓] `Step`: 단계별 과정 모델
+- [✓] `Authentication`: Supabase 인증 (소셜 로그인)
 
 # 컴포넌트 구성과 페이지 구조 및 구현 접근 방식
 
